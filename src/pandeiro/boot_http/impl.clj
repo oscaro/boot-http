@@ -119,12 +119,12 @@
      :local-port (-> server .getConnectors first .getLocalPort)
      :stop-server #(.stop server)}))
 
-(defn server [{:keys [port httpkit] :as opts}]
+(defn server [{:keys [host port httpkit] :as opts}]
   ((if httpkit start-httpkit start-jetty)
    (-> (ring-handler opts)
        wrap-content-type
        wrap-not-modified)
-   {:port port :join? false}))
+   {:ip host :host host :port port :join? false}))
 
 ;;
 ;; nREPL

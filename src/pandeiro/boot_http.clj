@@ -34,6 +34,7 @@
    c cleanup       SYM  sym  "A function to run after the server stops."
    r resource-root ROOT str  "The root prefix when serving resources from classpath"
    p port          PORT int  "The port to listen on. (Default: 3000)"
+   I ip-or-host    HOST str  "The ip or host to listen on."
    k httpkit            bool "Use Http-kit server instead of Jetty"
    s silent             bool "Silent-mode (don't output anything)"
    R reload             bool "Reload modified namespaces on each request."
@@ -57,6 +58,7 @@
                        (def server
                          (http/server
                           {:dir ~dir, :port ~port, :handler '~handler,
+                           :host ~ip-or-host
                            :reload '~reload, :env-dirs ~(vec (:directories pod/env)), :httpkit ~httpkit,
                            :not-found '~not-found,
                            :resource-root ~resource-root}))
