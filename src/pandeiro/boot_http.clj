@@ -7,6 +7,7 @@
    [boot.task.built-in :as task]))
 
 (def default-port 3000)
+(def default-host "localhost")
 
 (def serve-deps
   '[[ring/ring-core "1.4.0"]
@@ -48,6 +49,7 @@
                       (seq nrepl) (conj nrepl-dep))
         worker      (pod/make-pod (update-in (core/get-env) [:dependencies]
                                              into deps))
+        host        (or ip-or-host default-host)
         start       (delay
                      (pod/with-eval-in worker
                        (require '[pandeiro.boot-http.impl :as http]
@@ -58,7 +60,7 @@
                        (def server
                          (http/server
                           {:dir ~dir, :port ~port, :handler '~handler,
-                           :host ~ip-or-host
+                           :host ~host
                            :reload '~reload, :env-dirs ~(vec (:directories pod/env)), :httpkit ~httpkit,
                            :not-found '~not-found,
                            :resource-root ~resource-root}))
@@ -66,8 +68,9 @@
                          (when ~nrepl
                            (http/nrepl-server {:nrepl ~nrepl})))
                        (when-not ~silent
-                         (boot/info "Started %s on http://localhost:%d\n"
+                         (boot/info "Started %s on http://%s:%d\n"
                                (:human-name server)
+                               ~host
                                (:local-port server)))))]
     (when (and silent (not httpkit))
       (silence-jetty!))
