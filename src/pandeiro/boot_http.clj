@@ -93,7 +93,7 @@
                          (when ~nrepl
                            (http/nrepl-server {:nrepl (assoc ~nrepl :middleware (rsrv/->mw-list (map symbol ~middlewares)))})))
                        (when-not ~silent
-                         (boot/info "Started %s on %s://localhost:%d\n"
+                         (boot/info "Started %s on %s://%s:%d\n"
                                     (:human-name server)
                                     (if ~ssl-props "https" "http")
                                     ~host
