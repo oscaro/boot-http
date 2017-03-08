@@ -133,14 +133,16 @@
    (-> (ring-handler opts)
        wrap-content-type
        wrap-not-modified)
-    (cond-> {:port  port
-             :join? false}
-            (seq ssl-props)
-            (merge {:http?        false
-                    :ssl?         (boolean (seq ssl-props))
-                    :ssl-port     (:port ssl-props)
-                    :keystore     (:keystore ssl-props)
-                    :key-password (:key-password ssl-props)}))))
+   (cond-> {:port  port
+            :join? false
+            :host host
+            :ip ip}
+     (seq ssl-props)
+     (merge {:http?        false
+             :ssl?         (boolean (seq ssl-props))
+             :ssl-port     (:port ssl-props)
+             :keystore     (:keystore ssl-props)
+             :key-password (:key-password ssl-props)}))))
 
 ;;
 ;; nREPL

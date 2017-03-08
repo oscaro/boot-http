@@ -8,6 +8,7 @@
    [boot.repl          :as repl]))
 
 (def default-port 3000)
+(def default-host "localhost")
 
 ;keystore can be file path or resource
 (def ssl-defaults {:port 3443 :keystore (str (clojure.java.io/resource "boot-http-keystore.jks")) :key-password "p@ssw0rd"})
@@ -43,6 +44,7 @@
    c cleanup       SYM  sym  "A function to run after the server stops."
    r resource-root ROOT str  "The root prefix when serving resources from classpath"
    p port          PORT int  "The port to listen on. (Default: 3000)"
+   I ip-or-host    HOST str  "The ip or host to listen on."
    k httpkit            bool "Use Http-kit server instead of Jetty"
    s silent             bool "Silent-mode (don't output anything)"
    t ssl                bool "Serve via Jetty SSL connector on localhost on default port 3443 using cert from ./boot-http-keystore.jks"
@@ -55,7 +57,7 @@
         ssl-props   (when (or ssl ssl-props)
                       (if (and ssl-props (not (map? ssl-props)))
                         (throw (IllegalArgumentException.
-                                 (str "Expected map for ssl-props got \"" ssl-props "\"")))
+                                (str "Expected map for ssl-props got \"" ssl-props "\"")))
                         (merge ssl-defaults (or ssl-props {}))))
         server-dep  (if httpkit httpkit-dep jetty-dep)
         deps        (cond-> serve-deps
@@ -70,6 +72,7 @@
 
         worker      (pod/make-pod (update-in (core/get-env) [:dependencies]
                                              into deps))
+        host        (or ip-or-host default-host)
         start       (delay
                      (pod/with-eval-in worker
                        (require '[pandeiro.boot-http.impl :as http]
@@ -82,6 +85,7 @@
                          (http/server
                           {:dir ~dir, :port ~port, :handler '~handler,
                            :ssl-props ~ssl-props,
+                           :host ~host
                            :reload '~reload, :env-dirs ~(vec (:directories pod/env)), :httpkit ~httpkit,
                            :not-found '~not-found,
                            :resource-root ~resource-root}))
@@ -90,9 +94,10 @@
                            (http/nrepl-server {:nrepl (assoc ~nrepl :middleware (rsrv/->mw-list (map symbol ~middlewares)))})))
                        (when-not ~silent
                          (boot/info "Started %s on %s://localhost:%d\n"
-                               (:human-name server)
-                               (if ~ssl-props "https" "http")
-                               (:local-port server)))))]
+                                    (:human-name server)
+                                    (if ~ssl-props "https" "http")
+                                    ~host
+                                    (:local-port server)))))]
     (when (and silent (not httpkit))
       (silence-jetty!))
     (core/cleanup
