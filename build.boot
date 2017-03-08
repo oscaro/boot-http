@@ -11,12 +11,12 @@
  '[adzerk.boot-test :refer :all]
  '[pandeiro.boot-http :refer :all])
 
-(def +version+ "0.7.6")
+(def +version+ "0.7.6-osc")
 
 (bootlaces! +version+)
 
 (task-options!
- pom {:project     'pandeiro/boot-http
+ pom {:project     'com.oscaro/boot-http
       :version     +version+
       :description "Boot task to serve HTTP."
       :url         "https://github.com/pandeiro/boot-http"
